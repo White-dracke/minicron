@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig-build.json",
     "start": "tsc -p tsconfig-build.json && node dist/index.js",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --quiet"
   },
   "bin": {
     "minicron": "./dist/index.js"
@@ -16,6 +17,9 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^27.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "eslint": "^8.1.0",
     "jest": "^27.3.1",
     "prettier": "^2.4.1",
     "ts-jest": "^27.0.7",
