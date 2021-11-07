@@ -42,11 +42,21 @@ const testData: TestCase[] = [
     currentTime: "19:45",
     expectedOutput: "19:45 today - /bin/run_me_sixty_times",
   },
-  // {
-  //   input: "* 19 /bin/run_me_sixty_times",
-  //   currentTime: "20:10",
-  //   expectedOutput: "19:00 tomorrow - /bin/run_me_sixty_times",
-  // },
+  {
+    input: "15 * /bin/run_me_sixty_times",
+    currentTime: "20:30",
+    expectedOutput: "21:15 today - /bin/run_me_sixty_times",
+  },
+  {
+    input: "15 * /bin/run_me_sixty_times",
+    currentTime: "23:30",
+    expectedOutput: "00:15 tomorrow - /bin/run_me_sixty_times",
+  },
+  {
+    input: "* 19 /bin/run_me_sixty_times",
+    currentTime: "20:10",
+    expectedOutput: "19:00 tomorrow - /bin/run_me_sixty_times",
+  },
 ];
 
 testData.forEach((tc: TestCase) => {

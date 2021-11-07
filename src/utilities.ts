@@ -1,69 +1,86 @@
-export const transform = (cronString: string, currentTime: string): string => {
-  const [currentTimeHours, currentTimeMinutes] = currentTime.split(":");
-  const splittedCronString = cronString.split(" ");
-  const [minutes, hours] = splittedCronString;
-  const command = splittedCronString[2];
-  const dateString = getDateString(
+import {
+  createCurrentTime,
+  createCronTimeAndCommand,
+  CronTime,
+  includesHourWildcard,
+  isBigger,
+  isSmaller,
+  includesMinuteWildcard,
+  TODAY,
+  TOMORROW,
+  CronDateTime,
+  CronDate,
+  MAX_TIME,
+  MIN_TIME,
+} from "./time";
+
+export const transform = (
+  cronString: string,
+  currentTimeStr: string
+): string => {
+  const currentTime = createCurrentTime(currentTimeStr);
+  const [cronTime, command] = createCronTimeAndCommand(cronString);
+
+  const dateTime = getDateTime(cronTime, currentTime);
+
+  return `${dateTime.hours}:${dateTime.minutes} ${dateTime.date} - ${command}`;
+};
+
+const getDateTime = (
+  cronTime: CronTime,
+  currentTime: CronTime
+): CronDateTime => {
+  const hours = getHours(cronTime, currentTime);
+  const minutes = getMinutes(cronTime, currentTime);
+  const date = getDateString(cronTime, currentTime);
+
+  return sanitizeDateTime({
     hours,
     minutes,
-    currentTimeHours,
-    currentTimeMinutes
-  );
-
-  return `${getHours(hours, currentTimeHours)}:${getMinutes(
-    hours,
-    minutes,
-    currentTimeHours,
-    currentTimeMinutes
-  )} ${dateString} - ${command}`;
+    date,
+  });
 };
 
-const getDateString = (
-  hours: string,
-  minutes: string,
-  currentTimeHours: string,
-  currentTimeMinutes: string
-): string => {
-  if (hours !== "*" && hours > currentTimeHours) {
-    return "today";
+const sanitizeDateTime = (dateTime: CronDateTime): CronDateTime => {
+  return {
+    hours: dateTime.hours === MAX_TIME ? MIN_TIME : dateTime.hours,
+    minutes: dateTime.minutes,
+    date: dateTime.hours === MAX_TIME ? TOMORROW : dateTime.date,
+  };
+};
+
+const getDateString = (cronTime: CronTime, currentTime: CronTime): CronDate => {
+  if (isBigger(cronTime, currentTime)) {
+    return TODAY;
   }
-  if (hours !== "*" && hours < currentTimeHours) {
-    return "tomorrow";
+  if (isSmaller(cronTime, currentTime)) {
+    return TOMORROW;
   }
+  return TODAY;
+};
+
+const getHours = (cronTime: CronTime, currentTime: CronTime): string => {
   if (
-    hours !== "*" &&
-    hours === currentTimeHours &&
-    minutes !== "*" &&
-    minutes > currentTimeMinutes
+    includesHourWildcard(cronTime) &&
+    !includesMinuteWildcard(cronTime) &&
+    cronTime.minutes < currentTime.minutes
   ) {
-    return "today";
+    return `${Number.parseInt(currentTime.hours) + 1}`;
   }
+  return includesHourWildcard(cronTime) ? currentTime.hours : cronTime.hours;
+};
+
+const getMinutes = (cronTime: CronTime, currentTime: CronTime): string => {
   if (
-    hours !== "*" &&
-    hours === currentTimeHours &&
-    minutes !== "*" &&
-    minutes < currentTimeMinutes
+    !includesHourWildcard(cronTime) &&
+    (cronTime.hours > currentTime.hours ||
+      (includesMinuteWildcard(cronTime) &&
+        cronTime.minutes < currentTime.minutes))
   ) {
-    return "tomorrow";
-  }
-  return "today";
-};
-
-const getHours = (hours: string, currentTimeHours: string): string => {
-  return hours === "*" ? currentTimeHours : hours;
-};
-
-const getMinutes = (
-  hours: string,
-  minutes: string,
-  currentTimeHours: string,
-  currentTimeMinutes: string
-): string => {
-  const parsedHours = Number.parseInt(hours);
-  const parsedCurrentTimeHours = Number.parseInt(currentTimeHours);
-  if (!Number.isNaN(parsedHours) && parsedHours > parsedCurrentTimeHours) {
-    return "00";
+    return MIN_TIME;
   } else {
-    return minutes === "*" ? currentTimeMinutes : minutes;
+    return includesMinuteWildcard(cronTime)
+      ? currentTime.minutes
+      : cronTime.minutes;
   }
 };
