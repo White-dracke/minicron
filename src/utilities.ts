@@ -3,7 +3,6 @@ import {
   createCronTimeAndCommand,
   CronTime,
   includesHourWildcard,
-  isBigger,
   isSmaller,
   includesMinuteWildcard,
   TODAY,
@@ -12,6 +11,7 @@ import {
   CronDate,
   MAX_TIME,
   MIN_TIME,
+  zeroPad,
 } from "./time";
 
 export const transform = (
@@ -44,15 +44,12 @@ const getDateTime = (
 const sanitizeDateTime = (dateTime: CronDateTime): CronDateTime => {
   return {
     hours: dateTime.hours === MAX_TIME ? MIN_TIME : dateTime.hours,
-    minutes: dateTime.minutes,
+    minutes: zeroPad(dateTime.minutes),
     date: dateTime.hours === MAX_TIME ? TOMORROW : dateTime.date,
   };
 };
 
 const getDateString = (cronTime: CronTime, currentTime: CronTime): CronDate => {
-  if (isBigger(cronTime, currentTime)) {
-    return TODAY;
-  }
   if (isSmaller(cronTime, currentTime)) {
     return TOMORROW;
   }
@@ -63,7 +60,7 @@ const getHours = (cronTime: CronTime, currentTime: CronTime): string => {
   if (
     includesHourWildcard(cronTime) &&
     !includesMinuteWildcard(cronTime) &&
-    cronTime.minutes < currentTime.minutes
+    Number.parseInt(cronTime.minutes) < Number.parseInt(currentTime.minutes)
   ) {
     return `${Number.parseInt(currentTime.hours) + 1}`;
   }
@@ -73,9 +70,9 @@ const getHours = (cronTime: CronTime, currentTime: CronTime): string => {
 const getMinutes = (cronTime: CronTime, currentTime: CronTime): string => {
   if (
     !includesHourWildcard(cronTime) &&
-    (cronTime.hours > currentTime.hours ||
+    (Number.parseInt(cronTime.hours) > Number.parseInt(currentTime.hours) ||
       (includesMinuteWildcard(cronTime) &&
-        cronTime.minutes < currentTime.minutes))
+        Number.parseInt(cronTime.hours) < Number.parseInt(currentTime.hours)))
   ) {
     return MIN_TIME;
   } else {

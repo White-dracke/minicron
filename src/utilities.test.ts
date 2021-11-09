@@ -57,6 +57,16 @@ const testData: TestCase[] = [
     currentTime: "20:10",
     expectedOutput: "19:00 tomorrow - /bin/run_me_sixty_times",
   },
+  {
+    input: "18 3 foo",
+    currentTime: "15:33",
+    expectedOutput: "3:18 tomorrow - foo",
+  },
+  {
+    input: "8 10 foo",
+    currentTime: "12:30",
+    expectedOutput: "10:08 tomorrow - foo",
+  },
 ];
 
 testData.forEach((tc: TestCase) => {

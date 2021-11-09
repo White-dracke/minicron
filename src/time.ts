@@ -14,6 +14,10 @@ export interface CronDateTime extends CronTime {
   date: CronDate;
 }
 
+export function zeroPad(time: string): string {
+  return time.length === 1 ? `0${time}` : time;
+}
+
 export function createCurrentTime(timeString: string): CronTime {
   const [hours, minutes] = timeString.split(":");
   return {
@@ -48,24 +52,15 @@ export function includesMinuteWildcard(time: CronTime): boolean {
   return time.minutes === WILD;
 }
 
-export function isBigger(cronTime: CronTime, currentTime: CronTime) {
-  if (
-    !includesHourWildcard(cronTime) &&
-    (cronTime.hours > currentTime.hours ||
-      (cronTime.hours === currentTime.hours &&
-        cronTime.minutes > currentTime.hours))
-  ) {
-    return true;
-  }
-  return false;
-}
-
 export function isSmaller(cronTime: CronTime, currentTime: CronTime) {
   if (
     !includesHourWildcard(cronTime) &&
-    (cronTime.hours < currentTime.hours ||
-      (cronTime.hours === currentTime.hours &&
-        cronTime.minutes < currentTime.hours))
+    (Number.parseInt(cronTime.hours) < Number.parseInt(currentTime.hours) ||
+      (!includesMinuteWildcard(cronTime) &&
+        Number.parseInt(cronTime.hours) ===
+          Number.parseInt(currentTime.hours) &&
+        Number.parseInt(cronTime.minutes) <
+          Number.parseInt(currentTime.minutes)))
   ) {
     return true;
   }
